@@ -37,6 +37,11 @@ show collections
 ```
 
 # CRUD con MongoDB
+
+La sintaxis en general siempre es:
+```
+db.nombreColeccion.funcion
+```
 Insertar registros
 ```
 db.personas.insert({
