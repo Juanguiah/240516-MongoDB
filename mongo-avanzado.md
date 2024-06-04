@@ -1,5 +1,163 @@
 # MongoDB - Avanzado
 
+## Registros
+
+```
+db.pedidos.insertOne({
+  cliente: {
+    nombre: "Juan Perez",
+    email: "juanperez@example.com",
+    direccion: "mz2 cs 1"
+  },
+  productos: [
+    { _id: ObjectId(), nombre: "iPhone", precio : 1000 , categoria : "celulares" },
+    { _id: ObjectId(),nombre: "iPad", precio : 800, categoria : "tablets" }
+  ]
+})
+
+db.pedidos.insertOne({
+  cliente: {
+    nombre: "Daniel Garcés",
+    email: "daniel.garces@example.com",
+    direccion: "mz2 cs 12"
+  },
+  productos: [
+    { _id: ObjectId(),nombre: "iPad", precio : 800, categoria : "tablets" }
+  ]
+})
+
+db.pedidos.insertOne({
+  cliente: {
+    nombre: "Juan Perez",
+    email: "juanperez@example.com",
+    direccion: "mz2 cs 1"
+  },
+  productos: [
+  {
+      _id: ObjectId(),
+      nombre: "iPad SE",
+      precio: 2500,
+      categoria: "tablets",
+      detalles: {
+        modelo: "Air",
+        fabricante: "Apple",
+        especificaciones: {
+          almacenamiento: "64GB",
+          color: "Plata"
+        }
+      }
+    },
+    {
+      _id: ObjectId(),
+      nombre: "iPad mini",
+      precio: 1000,
+      categoria: "tablets",
+      detalles: {
+        modelo: "Air",
+        fabricante: "Apple",
+        especificaciones: {
+          almacenamiento: "64GB",
+          color: "Plata"
+        }
+      }
+    },
+    {
+      _id: ObjectId(),
+      nombre: "iPad",
+      precio: 800,
+      categoria: "tablets",
+      detalles: {
+        modelo: "Air",
+        fabricante: "Apple",
+        especificaciones: {
+          almacenamiento: "64GB",
+          color: "Plata"
+        }
+      }
+    }
+  ]
+});
+
+//Registro 2
+db.pedidos.insertOne({
+  cliente: {
+    nombre: "Maria Lopez",
+    email: "marialopez@example.com",
+    direccion: "Av. Principal 123"
+  },
+  productos: [
+    {
+      _id: ObjectId(),
+      nombre: "Samsung Galaxy S21",
+      precio: 1100,
+      categoria: "celulares",
+      detalles: {
+        modelo: "S21",
+        fabricante: "Samsung",
+        especificaciones: {
+          almacenamiento: "256GB",
+          color: "Azul"
+        }
+      }
+    },
+    {
+      _id: ObjectId(),
+      nombre: "Samsung Galaxy Tab S7",
+      precio: 900,
+      categoria: "tablets",
+      detalles: {
+        modelo: "S7",
+        fabricante: "Samsung",
+        especificaciones: {
+          almacenamiento: "128GB",
+          color: "Gris"
+        }
+      }
+    }
+  ]
+});
+
+//Registro 3
+db.pedidos.insertOne({
+  cliente: {
+    nombre: "Pedro Martinez",
+    email: "pedromartinez@example.com",
+    direccion: "Calle 5 de Mayo 456"
+  },
+  productos: [
+    {
+      _id: ObjectId(),
+      nombre: "Google Pixel 6",
+      precio: 950,
+      categoria: "celulares",
+      detalles: {
+        modelo: "Pixel 6",
+        fabricante: "Google",
+        especificaciones: {
+          almacenamiento: "128GB",
+          color: "Blanco"
+        }
+      }
+    },
+    {
+      _id: ObjectId(),
+      nombre: "Google Pixelbook Go",
+      precio: 1200,
+      categoria: "laptops",
+      detalles: {
+        modelo: "Pixelbook Go",
+        fabricante: "Google",
+        especificaciones: {
+          almacenamiento: "256GB",
+          color: "Negro"
+        }
+      }
+    }
+  ]
+});
+```
+
+
 ## Trabajando con subdocumentos
 Supongamos que tenemos una colección de pedidos, donde nos llegan los pedidos de una tienda online
 ```
@@ -14,6 +172,30 @@ db.pedidos.insertOne({
     { _id: ObjectId(),nombre: "iPad", precio : 800, categoria : "tablets" }
   ]
 })
+
+//Forma incorrecta
+db.pedidos.updateOne(
+{"_id": ObjectId('664fdb5e31ed9d98c07cd8d3')},
+{ "$set": {cliente: {nombre: 'Jose Daniel'} }}
+)
+//Forma correcta
+db.pedidos.updateOne(
+{"_id": ObjectId('664fdc3d31ed9d98c07cd8d6')},
+{ "$set": { "cliente.nombre" : "Jose Daniel"} }
+)
+
+//Actualizando subdocumento productos
+db.pedidos.updateOne(
+{"_id": ObjectId('664fdc3d31ed9d98c07cd8d6'), "productos._id": ObjectId('664fdc3d31ed9d98c07cd8d4')},
+{ "$set": { "productos.$.precio" : 2500} }
+)
+
+db.pedidos.updateOne(
+{"_id": ObjectId('664fdc3d31ed9d98c07cd8d6'), "productos._id": ObjectId('664fdc3d31ed9d98c07cd8d5')},
+{ "$set": { "productos.$.precio" : 950} }
+)
+// el operador $ en productos.$.precio, actúa para identificar el primer elemento que coincida
+// con la condición específica de la consulta de actualización
 ```
 
 ## Operadores para trabajar con subdocumentos
@@ -29,15 +211,45 @@ db.pedidos.insertOne({
 
 ## $addToSet
 ```
-db.pedidos.updateOne({ "_id": ObjectId("643df9c389917b0a95d9cce7") }, { "$addToSet": { "productos": {nombre: 'Macbook Pro', precio: 2000} } })
+db.pedidos.updateOne(
+{ "_id": ObjectId("664fdc3d31ed9d98c07cd8d6") },
+{ "$addToSet": {
+	"productos": { nombre: "iPad", precio : 950, categoria : "tablets" }
+	}
+})
 ```
 ## $push
 ```
-db.pedidos.updateOne({ "_id": ObjectId("643df9c389917b0a95d9cce7") }, { "$push": { "productos": {nombre: 'Macbook Pro', precio: 2500} } })
+db.pedidos.updateOne(
+{ "_id": ObjectId("664fdc3d31ed9d98c07cd8d6") },
+{ "$push": {
+	"productos": { nombre: "iPad", precio : 950, categoria : "tablets" }
+	}
+})
 ```
 ## $elemMatch
 ```
-db.pedidos.find({ "productos": {  "$elemMatch": { nombre: 'Macbook Pro'} } } )
+db.pedidos.find({ "productos": {  "$elemMatch": { nombre: 'iPad'} } } )
+db.pedidos.find({ "productos": {  "$elemMatch": { nombre: 'iPhone'} } } )
+
+db.pedidos.find({ "productos": {  "$elemMatch": {
+	"detalles.modelo": "12 Pro"
+}}} )
+
+
+db.pedidos.find(
+{"productos":{"$elemMatch":{ "detalles.especificaciones.almacenamiento": "128GB"}}
+})
+
+db.pedidos.find({
+  productos: {
+    $elemMatch: {
+      nombre: "iPhone",
+      "detalles.especificaciones.almacenamiento": "128GB",
+      "detalles.especificaciones.color": "Negro"
+    }
+  }
+})
 ```
 
 ## $pull
